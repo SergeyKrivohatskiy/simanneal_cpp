@@ -83,10 +83,122 @@ namespace simanneal_cpp
         m_bestStateEnergy = std::move(bestE);
     }
 
-    Annealer::run_schedule Annealer::computeRunSchedule(
-            double targetRunTime, size_t steps)
+
+    void Annealer::testTemperatureRun(temperature_t T, size_t steps,
+        double &acceptance, double &improvement, energy_t &E) const
     {
-        throw std::runtime_error("Not implemented");
+        state_t prevS = bestState();
+        energy_t prevE = bestEnergy();
+        size_t accepts = 0;
+        size_t improves = 0;
+        for (size_t step = 0; step < steps; ++step)
+        {
+            state_t newS(prevS);
+            energy_t newE = moveState(newS);
+            energy_t dE = newE - prevE;
+            if (dE < 0.0 || exp(-dE / T) > m_zeroOneUniform(m_randomGenerator))
+            {
+                accepts += 1;
+                if (dE < 0.0)
+                {
+                    improves += 1;
+                    prevS = std::move(newS);
+                    prevE = newE;
+                }
+            }
+        }
+        E = prevE;
+        acceptance = accepts / static_cast<double>(steps);
+        improvement = improves / static_cast<double>(steps);
+    }
+
+    Annealer::run_schedule Annealer::computeRunSchedule(
+        double const targetRunTime, size_t const steps,
+        bool const printProgressMessages) const
+    {
+        std::chrono::system_clock::duration startTime = now();
+
+        temperature_t T = 0.0;
+        energy_t E = bestEnergy();
+        state_t state = bestState();
+        size_t step = 0;
+        while (T == 0.0)
+        {
+            step += 1;
+            T = abs(moveState(state) - E);
+        }
+
+        double acceptance, improvement;
+        testTemperatureRun(T, steps, acceptance, improvement, E);
+
+        step += steps;
+        static temperature_t const MAX_TEMP = 1e25;
+        static temperature_t const MIN_TEMP = 1e-10;
+        if (printProgressMessages)
+        {
+            m_updatesOut << "Finding maximum temperature\n";
+        }
+        while (acceptance > 0.98)
+        {
+            T = T / 1.5;
+            if (T < MIN_TEMP)
+            {
+                T = MIN_TEMP;
+                break;
+            }
+            testTemperatureRun(T, steps, acceptance, improvement, E);
+            step += steps;
+        }
+        while (acceptance < 0.98)
+        {
+            T = T * 1.5;
+            if (T > MAX_TEMP)
+            {
+                T = MAX_TEMP;
+                break;
+            }
+            testTemperatureRun(T, steps, acceptance, improvement, E);
+            step += steps;
+            //self.update(step, T, E, acceptance, improvement);
+        }
+        temperature_t const Tmax = T;
+        if (printProgressMessages)
+        {
+            m_updatesOut << "\tmaximum temperature is " << Tmax << "\n";
+        }
+
+
+        if (printProgressMessages)
+        {
+            m_updatesOut << "Finding minimum temperature\n";
+        }
+        while (improvement > 0.0)
+        {
+            T = T / 1.5;
+            if (T < MIN_TEMP)
+            {
+                T = MIN_TEMP;
+                break;
+            }
+            testTemperatureRun(T, steps, acceptance, improvement, E);
+            step += steps;
+            //self.update(step, T, E, acceptance, improvement);
+        }
+        temperature_t const Tmin = T;
+        if (printProgressMessages)
+        {
+            m_updatesOut << "\tminimum temperature is " << Tmin << "\n";
+        }
+
+        double elapsedSeconds = std::chrono::duration_cast
+            <std::chrono::duration<double>>(now() - startTime).count();
+        size_t const resultSteps = int(60.0 * targetRunTime * step / elapsedSeconds);
+        if (printProgressMessages)
+        {
+            m_updatesOut << "\tTarget steps count is " << resultSteps << "\n";
+        }
+
+        return{ Tmax, Tmin, resultSteps };
     }
 
     Annealer::state_t const &Annealer::bestState() const

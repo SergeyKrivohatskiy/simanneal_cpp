@@ -67,13 +67,23 @@ TEST_CASE("RunAnnealing tests", "[Annealer][runAnnealing]")
 
 TEST_CASE("computeRunSchedule tests", "[Annealer][computeRunSchedule]")
 {
-    // TODO uncomment when computeRunSchedule implemented
-    //LinearAnnealer annealer(30.0);
+    LinearAnnealer annealer(30.0);
 
-    //LinearAnnealer::run_schedule schedule1 = annealer.computeRunSchedule(0.2);
-    //LinearAnnealer::run_schedule schedule2 = annealer.computeRunSchedule(0.4);
+    LinearAnnealer::run_schedule schedule1 = annealer.computeRunSchedule(0.02);
+    LinearAnnealer::run_schedule schedule2 = annealer.computeRunSchedule(0.04);
 
-    //double stepsRatio = schedule2.steps / static_cast<double>(schedule2.steps);
-    //CHECK(stepsRatio == Approx(2.0).epsilon(0.3));
-    // Add checks for temperature and duration of runAnnealing with schedules
+    double stepsRatio = schedule2.steps / static_cast<double>(schedule1.steps);
+    CHECK(stepsRatio == Approx(2.0).epsilon(0.3));
+    CHECK(schedule1.maxT == Approx(schedule2.maxT).epsilon(0.5));
+    CHECK(schedule1.minT == Approx(schedule2.minT).epsilon(0.5));
+    CHECK(schedule1.minT < schedule1.maxT);
+
+
+    std::chrono::system_clock::duration startTime =
+        std::chrono::system_clock::now().time_since_epoch();
+    annealer.runAnnealing(schedule2, 0);
+    double elapsedMinutes = std::chrono::duration_cast<std::chrono::duration<double>>(
+        std::chrono::system_clock::now().time_since_epoch() - startTime).count() / 60;
+
+    CHECK(elapsedMinutes == Approx(0.04).epsilon(0.3));
 }

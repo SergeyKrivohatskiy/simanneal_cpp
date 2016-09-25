@@ -36,8 +36,9 @@ namespace simanneal_cpp
             size_t updates = 100);
 
         run_schedule computeRunSchedule(
-            double targetRunTime,
-            size_t steps = 2000);
+            double targetRunTimeMinutes,
+            size_t steps = 2000,
+            bool printProgressMessages = false) const;
 
         state_t const &bestState() const;
 
@@ -55,13 +56,15 @@ namespace simanneal_cpp
             energy_t const &currentE,
             double currentAcceptance = 0.0,
             double currentImprovement = 0.0);
+        void testTemperatureRun(temperature_t T, size_t steps,
+            double &accepts, double &improves, energy_t &E) const;
 
     private:
         static std::chrono::system_clock::duration now();
         void printTimeString(double seconds);
 
     private:
-        std::mt19937 m_randomGenerator;
+        mutable std::mt19937 m_randomGenerator;
         std::uniform_real_distribution<state_t> m_zeroOneUniform;
         std::ostream &m_updatesOut;
         state_t m_bestState;
