@@ -65,7 +65,7 @@ namespace simanneal_cpp
 
     private:
         mutable std::mt19937 m_randomGenerator;
-        std::uniform_real_distribution<state_t> m_zeroOneUniform;
+        std::uniform_real_distribution<double> m_zeroOneUniform;
         std::ostream &m_updatesOut;
         state_t m_bestState;
         energy_t m_bestStateEnergy;
