@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include <chrono>
+#include <random>
 
 namespace simanneal_cpp
 {
@@ -19,7 +21,7 @@ namespace simanneal_cpp
         };
 
     public:
-        Annealer(state_t &&initialState,
+        Annealer(state_t const &initialState,
                  energy_t initialStateEnergy,
                  std::ostream &updatesOut = std::cout);
 
@@ -45,9 +47,22 @@ namespace simanneal_cpp
         virtual energy_t moveState(state_t &initialState) const = 0;
 
     private:
-        void printUpdate();
+        void printUpdate(
+            std::chrono::system_clock::duration const &startTime,
+            size_t step,
+            size_t steps,
+            temperature_t const &currentT,
+            energy_t const &currentE,
+            double currentAcceptance = 0.0,
+            double currentImprovement = 0.0);
 
     private:
+        static std::chrono::system_clock::duration now();
+        void printTimeString(double seconds);
+
+    private:
+        std::mt19937 m_randomGenerator;
+        std::uniform_real_distribution<state_t> m_zeroOneUniform;
         std::ostream &m_updatesOut;
         state_t m_bestState;
         energy_t m_bestStateEnergy;

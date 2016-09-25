@@ -16,7 +16,7 @@ ExternalProject_Get_Property (catch source_dir)
 set(CATCH_INCLUDE_DIR ${source_dir}/include)
 
 
-file (GLOB SOURCE_FILES "*.cpp")
+file (GLOB SOURCE_FILES "*.cpp" ".hpp")
 
 add_executable (tests ${SOURCE_FILES})
 include_directories (${simanneal_cpp_SOURCE_DIR} ${CATCH_INCLUDE_DIR})
