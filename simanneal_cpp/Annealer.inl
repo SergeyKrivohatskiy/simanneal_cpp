@@ -5,7 +5,8 @@
 namespace simanneal_cpp
 {
 
-    Annealer::Annealer(state_t const &initialState,
+    template<class T>
+    Annealer<T>::Annealer(state_t const &initialState,
         energy_t initialStateEnergy, std::ostream & updatesOut):
         m_randomGenerator(),
         m_zeroOneUniform(0.0, 1.0),
@@ -15,13 +16,15 @@ namespace simanneal_cpp
     {
     }
 
-    void Annealer::runAnnealing(
+    template<class T>
+    void Annealer<T>::runAnnealing(
         run_schedule const &schedule, size_t updates)
     {
         return runAnnealing(schedule.maxT, schedule.minT, schedule.steps, updates);
     }
 
-    void Annealer::runAnnealing(
+    template<class T>
+    void Annealer<T>::runAnnealing(
         temperature_t const maxT, temperature_t const minT,
         size_t const steps, size_t const updates)
     {
@@ -84,7 +87,8 @@ namespace simanneal_cpp
     }
 
 
-    void Annealer::testTemperatureRun(temperature_t T, size_t steps,
+    template<class T>
+    void Annealer<T>::testTemperatureRun(temperature_t T, size_t steps,
         double &acceptance, double &improvement, energy_t &E) const
     {
         state_t prevS = bestState();
@@ -112,7 +116,8 @@ namespace simanneal_cpp
         improvement = improves / static_cast<double>(steps);
     }
 
-    Annealer::run_schedule Annealer::computeRunSchedule(
+    template<class T>
+    typename Annealer<T>::run_schedule Annealer<T>::computeRunSchedule(
         double const targetRunTime, size_t const steps,
         bool const printProgressMessages) const
     {
@@ -201,17 +206,20 @@ namespace simanneal_cpp
         return{ Tmax, Tmin, resultSteps };
     }
 
-    Annealer::state_t const &Annealer::bestState() const
+    template<class T>
+    typename Annealer<T>::state_t const &Annealer<T>::bestState() const
     {
         return m_bestState;
     }
 
-    Annealer::energy_t const &Annealer::bestEnergy() const
+    template<class T>
+    typename Annealer<T>::energy_t const &Annealer<T>::bestEnergy() const
     {
         return m_bestStateEnergy;
     }
 
-    void Annealer::printUpdate(
+    template<class T>
+    void Annealer<T>::printUpdate(
         std::chrono::system_clock::duration const &startTime,
         size_t step,
         size_t steps,
@@ -247,12 +255,14 @@ namespace simanneal_cpp
         m_updatesOut.copyfmt(stateSaver);
     }
 
-    std::chrono::system_clock::duration Annealer::now()
+    template<class T>
+    std::chrono::system_clock::duration Annealer<T>::now()
     {
         return std::chrono::system_clock::now().time_since_epoch();
     }
 
-    void Annealer::printTimeString(double secondsFloating)
+    template<class T>
+    void Annealer<T>::printTimeString(double secondsFloating)
     {
         size_t seconds = static_cast<size_t>(round(secondsFloating));
         size_t const hours = seconds / 3600;

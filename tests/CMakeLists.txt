@@ -20,5 +20,4 @@ file (GLOB SOURCE_FILES "*.cpp" ".hpp")
 
 add_executable (tests ${SOURCE_FILES})
 include_directories (${simanneal_cpp_SOURCE_DIR} ${CATCH_INCLUDE_DIR})
-target_link_libraries (tests simanneal_cpp)
-add_dependencies (tests catch)
+add_dependencies (tests catch simanneal_cpp)

@@ -2,10 +2,10 @@
 #include <random>
 #include <catch.hpp>
 
-class LinearAnnealer : public simanneal_cpp::Annealer
+class LinearAnnealer : public simanneal_cpp::Annealer<double>
 {
 public:
-    typedef simanneal_cpp::Annealer super;
+    typedef simanneal_cpp::Annealer<double> super;
     LinearAnnealer(state_t const &initialState) :
         super(initialState, getEnergy(initialState)),
         m_gen(),

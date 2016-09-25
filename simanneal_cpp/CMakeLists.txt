@@ -1,9 +1,7 @@
 project(simanneal_cpp)
 
-set (HEADER_FILES "Annealer.hpp")
-set (SOURCE_FILES "Annealer.cpp")
+set (HEADER_FILES "Annealer.hpp Annealer.inl")
 
-add_library (simanneal_cpp ${SOURCE_FILES} ${HEADER_FILES})
+add_library (simanneal_cpp INTERFACE)
 
-install (TARGETS simanneal_cpp DESTINATION bin)
 install (FILES "${HEADER_FILES}" DESTINATION include)

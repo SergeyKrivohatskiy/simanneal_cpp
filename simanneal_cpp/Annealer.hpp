@@ -6,11 +6,11 @@
 namespace simanneal_cpp
 {
 
-    // TODO rewrite to template<T>, T is state_t
+    template<class T>
     class Annealer
     {
     public:
-        typedef double state_t;
+        typedef T state_t;
         typedef double temperature_t;
         typedef double energy_t;
         struct run_schedule
@@ -72,3 +72,6 @@ namespace simanneal_cpp
 	};
 
 } // namespace simanneal_cpp
+
+
+#include "Annealer.inl"
