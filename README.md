@@ -6,7 +6,7 @@ License
 ---------------
 The project uses MIT license. See LICENSE file for the details.
 
-Compability
+Compatibility
 ---------------
 The project is tested with
 - Visual Studio 14(2015)
