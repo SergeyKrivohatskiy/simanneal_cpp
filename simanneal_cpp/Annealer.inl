@@ -29,16 +29,16 @@ namespace simanneal_cpp
         size_t const steps, size_t const updates)
     {
         size_t step = 0;
-        std::chrono::system_clock::duration startTime = now();
+        time_t startTime = now();
 
         assert(minT < maxT);
         assert(0 < minT);
         temperature_t Tfactor = -log(maxT / minT);
 
         state_t prevS(bestState());
-        energy_t prevE = bestEnergy();
+        energy_t prevE(bestEnergy());
         state_t bestS(bestState());
-        energy_t bestE = bestEnergy();
+        energy_t bestE(bestEnergy());
 
         if (updates)
         {
@@ -46,15 +46,14 @@ namespace simanneal_cpp
         }
 
         size_t trials = 0, accepts = 0, improves = 0;
-        while (step < steps)
+        while (step++ < steps)
         {
-            step += 1;
-            temperature_t T = maxT * exp(Tfactor * step / steps);
+            temperature_t temperature = maxT * exp(Tfactor * step / steps);
             state_t newS(prevS);
             energy_t newE = moveState(newS);
             energy_t dE = newE - prevE;
             trials += 1;
-            if (dE < 0.0 || exp(-dE / T) > m_zeroOneUniform(m_randomGenerator))
+            if (dE < 0.0 || exp(-dE / temperature) > m_zeroOneUniform(m_randomGenerator))
             {
                 accepts += 1;
                 if (dE < 0.0)
@@ -74,7 +73,7 @@ namespace simanneal_cpp
             {
                 if (step % (steps / updates) == 0)
                 {
-                    printUpdate(startTime, step, steps, T, newE,
+                    printUpdate(startTime, step, steps, temperature, newE,
                         accepts / static_cast<double>(trials),
                         improves / static_cast<double>(trials));
                     trials = 0, accepts = 0, improves = 0;
@@ -123,18 +122,18 @@ namespace simanneal_cpp
     {
         std::chrono::system_clock::duration startTime = now();
 
-        temperature_t T = 0.0;
+        temperature_t temperature = 0.0;
         energy_t E = bestEnergy();
         state_t state = bestState();
         size_t step = 0;
-        while (T == 0.0)
+        while (temperature == 0.0)
         {
             step += 1;
-            T = abs(moveState(state) - E);
+            temperature = abs(moveState(state) - E);
         }
 
         double acceptance, improvement;
-        testTemperatureRun(T, steps, acceptance, improvement, E);
+        testTemperatureRun(temperature, steps, acceptance, improvement, E);
 
         step += steps;
         static temperature_t const MAX_TEMP = 1e25;
@@ -145,28 +144,27 @@ namespace simanneal_cpp
         }
         while (acceptance > 0.98)
         {
-            T = T / 1.5;
-            if (T < MIN_TEMP)
+            temperature = temperature / 1.5;
+            if (temperature < MIN_TEMP)
             {
-                T = MIN_TEMP;
+                temperature = MIN_TEMP;
                 break;
             }
-            testTemperatureRun(T, steps, acceptance, improvement, E);
+            testTemperatureRun(temperature, steps, acceptance, improvement, E);
             step += steps;
         }
         while (acceptance < 0.98)
         {
-            T = T * 1.5;
-            if (T > MAX_TEMP)
+            temperature = temperature * 1.5;
+            if (temperature > MAX_TEMP)
             {
-                T = MAX_TEMP;
+                temperature = MAX_TEMP;
                 break;
             }
-            testTemperatureRun(T, steps, acceptance, improvement, E);
+            testTemperatureRun(temperature, steps, acceptance, improvement, E);
             step += steps;
-            //self.update(step, T, E, acceptance, improvement);
         }
-        temperature_t const Tmax = T;
+        temperature_t const Tmax = temperature;
         if (printProgressMessages)
         {
             m_updatesOut << "\tmaximum temperature is " << Tmax << "\n";
@@ -179,17 +177,16 @@ namespace simanneal_cpp
         }
         while (improvement > 0.0)
         {
-            T = T / 1.5;
-            if (T < MIN_TEMP)
+            temperature = temperature / 1.5;
+            if (temperature < MIN_TEMP)
             {
-                T = MIN_TEMP;
+                temperature = MIN_TEMP;
                 break;
             }
-            testTemperatureRun(T, steps, acceptance, improvement, E);
+            testTemperatureRun(temperature, steps, acceptance, improvement, E);
             step += steps;
-            //self.update(step, T, E, acceptance, improvement);
         }
-        temperature_t const Tmin = T;
+        temperature_t const Tmin = temperature;
         if (printProgressMessages)
         {
             m_updatesOut << "\tminimum temperature is " << Tmin << "\n";
@@ -220,13 +217,13 @@ namespace simanneal_cpp
 
     template<class T>
     void Annealer<T>::printUpdate(
-        std::chrono::system_clock::duration const &startTime,
+        time_t const &startTime,
         size_t step,
         size_t steps,
-        temperature_t const &currentT,
-        energy_t const &currentE,
-        double const currentAcceptance,
-        double const currentImprovement)
+        temperature_t const &temperature,
+        energy_t const &energy,
+        double const acceptance,
+        double const improvement)
     {
         double elapsedSeconds = std::chrono::duration_cast
                 <std::chrono::duration<double>>(now() - startTime).count();
@@ -236,16 +233,16 @@ namespace simanneal_cpp
         {
             m_updatesOut << " Temperature        Energy    Accept   Improve     Elapsed   Remaining\n";
             m_updatesOut << std::fixed << std::setfill(' ')
-                << std::setw(12) << std::setprecision(2) << currentT << "  "
-                << std::setw(12) << std::setprecision(2) << currentE << "                      ";
+                << std::setw(12) << std::setprecision(2) << temperature << "  "
+                << std::setw(12) << std::setprecision(2) << energy << "                      ";
             printTimeString(elapsedSeconds);
             m_updatesOut << "            ";
         } else {
             m_updatesOut << std::fixed << std::setfill(' ')
-                << std::setw(12) << std::setprecision(2) << currentT << "  "
-                << std::setw(12) << std::setprecision(2) << currentE << "  "
-                << std::setw(7) << currentAcceptance * 100 << "%  "
-                << std::setw(7) << currentImprovement * 100 << "%  ";
+                << std::setw(12) << std::setprecision(2) << temperature << "  "
+                << std::setw(12) << std::setprecision(2) << energy << "  "
+                << std::setw(7) << acceptance * 100 << "%  "
+                << std::setw(7) << improvement * 100 << "%  ";
             printTimeString(elapsedSeconds);
             m_updatesOut << "  ";
             double const remainSeconds = (steps - step) * (elapsedSeconds / step);
@@ -256,7 +253,7 @@ namespace simanneal_cpp
     }
 
     template<class T>
-    std::chrono::system_clock::duration Annealer<T>::now()
+    auto Annealer<T>::now() -> time_t
     {
         return std::chrono::system_clock::now().time_since_epoch();
     }

@@ -23,17 +23,17 @@ namespace simanneal_cpp
     public:
         Annealer(state_t const &initialState,
                  energy_t initialStateEnergy,
-                 std::ostream &updatesOut = std::cout);
+                 std::ostream &updateMessagesOut = std::cout);
 
         void runAnnealing(
             run_schedule const &schedule,
-            size_t updates = 100);
+            size_t updateMessages = 100);
 
         void runAnnealing(
-            temperature_t maxT = 25000.0,
-            temperature_t minT = 2.5,
+            temperature_t maxTemperature = 25000.0,
+            temperature_t minTemperature = 2.5,
             size_t steps = 50000,
-            size_t updates = 100);
+            size_t updateMessages = 100);
 
         run_schedule computeRunSchedule(
             double targetRunTimeMinutes,
@@ -48,19 +48,20 @@ namespace simanneal_cpp
         virtual energy_t moveState(state_t &initialState) const = 0;
 
     private:
+        typedef std::chrono::system_clock::duration time_t;
         void printUpdate(
-            std::chrono::system_clock::duration const &startTime,
+            time_t const &startTime,
             size_t step,
             size_t steps,
-            temperature_t const &currentT,
-            energy_t const &currentE,
-            double currentAcceptance = 0.0,
-            double currentImprovement = 0.0);
+            temperature_t const &temperature,
+            energy_t const &energy,
+            double acceptance = 0.0,
+            double improvement = 0.0);
         void testTemperatureRun(temperature_t T, size_t steps,
             double &accepts, double &improves, energy_t &E) const;
 
     private:
-        static std::chrono::system_clock::duration now();
+        static time_t now();
         void printTimeString(double seconds);
 
     private:
