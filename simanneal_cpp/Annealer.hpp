@@ -57,7 +57,7 @@ namespace simanneal_cpp
             energy_t const &energy,
             double acceptance = 0.0,
             double improvement = 0.0);
-        void testTemperatureRun(temperature_t T, size_t steps,
+        void testTemperatureRun(temperature_t t, size_t steps,
             double &accepts, double &improves, energy_t &E) const;
 
     private:
@@ -66,7 +66,7 @@ namespace simanneal_cpp
 
     private:
         mutable std::mt19937 m_randomGenerator;
-        std::uniform_real_distribution<double> m_zeroOneUniform;
+        mutable std::uniform_real_distribution<double> m_zeroOneUniform;
         std::ostream &m_updatesOut;
         state_t m_bestState;
         energy_t m_bestStateEnergy;
