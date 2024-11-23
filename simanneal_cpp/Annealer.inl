@@ -87,7 +87,7 @@ namespace simanneal_cpp
 
 
     template<class T>
-    void Annealer<T>::testTemperatureRun(temperature_t T, size_t steps,
+    void Annealer<T>::testTemperatureRun(temperature_t t, size_t steps,
         double &acceptance, double &improvement, energy_t &E) const
     {
         state_t prevS = bestState();
@@ -99,7 +99,7 @@ namespace simanneal_cpp
             state_t newS(prevS);
             energy_t newE = moveState(newS);
             energy_t dE = newE - prevE;
-            if (dE < 0.0 || exp(-dE / T) > m_zeroOneUniform(m_randomGenerator))
+            if (dE < 0.0 || exp(-dE / t) > m_zeroOneUniform(m_randomGenerator))
             {
                 accepts += 1;
                 if (dE < 0.0)
